@@ -1,0 +1,11 @@
+# Requirements for slides-generator
+# Core Google API libraries used by the scripts
+google-api-python-client
+google-auth
+google-auth-oauthlib
+
+# HTTP client used to POST the merge payload
+requests
+
+# Optional: nicer tabular CLI output (mentioned in a script docstring)
+# tabulate

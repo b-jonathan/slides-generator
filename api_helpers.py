@@ -16,15 +16,15 @@ python read_drive.py <FOLDER_ID> --recursive
 import datetime
 import os
 import re
-from typing import List, Dict
+from typing import Dict, List
 
+from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
 SCOPES = [
-    "https://www.googleapis.com/auth/drive.readonly",
+    "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/presentations",
 ]
 MIME_SLIDES = "application/vnd.google-apps.presentation"
@@ -86,12 +86,10 @@ def list_slides_in_folder(
         )
         fields = "id, name"
         for f in query_files(slides_q, fields):
-            results.append(
-                {
-                    "Title": f.get("name"),
-                    "Presentation ID": f.get("id"),
-                }
-            )
+            results.append({
+                "Title": f.get("name"),
+                "Presentation ID": f.get("id"),
+            })
         if recursive:
             folder_q = (
                 f"'{fid}' in parents and mimeType = '{MIME_FOLDER}' and trashed = false"
@@ -104,9 +102,18 @@ def list_slides_in_folder(
 
 
 def create_presentation(slides_service) -> Dict:
-    """Create a new Google Slides presentation with today's date in the title and return metadata + URL."""
-    today = datetime.date.today().strftime("%m/%d/%Y")
-    body = {"title": today}
+    """Create a new Google Slides presentation with the closest Sunday AFTER
+    today's date in the title and return metadata + URL.
+    """
+    today = datetime.date.today()
+    # Python's weekday(): Monday == 0 ... Sunday == 6
+    weekday = today.weekday()
+    # Days until next Sunday strictly after today
+    days_ahead = (6 - weekday + 7) % 7
+    if days_ahead == 0:
+        days_ahead = 7
+    next_sunday = today + datetime.timedelta(days=days_ahead)
+    body = {"title": next_sunday.strftime("%m/%d/%Y")}
     pres = slides_service.presentations().create(body=body).execute()
 
     pres_id = pres["presentationId"]

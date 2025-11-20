@@ -4,6 +4,7 @@
 import json
 
 import requests
+
 from api_helpers import (
     create_presentation,
     extract_folder_id,
@@ -12,8 +13,10 @@ from api_helpers import (
 )
 from parse_songs import build_merge_payload, extract_song_titles, match_titles_to_ids
 
-
-SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+SCOPES = [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/presentations",
+]
 MIME_SLIDES = "application/vnd.google-apps.presentation"
 MIME_FOLDER = "application/vnd.google-apps.folder"
 
@@ -46,7 +49,7 @@ def main():
     payload = build_merge_payload(titles, drive_results, presentation)
     print(payload)
 
-    WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4LVH81Z6_8dC8_MISm7BwSFT0hWehAKABMnyBdJOvSrr3jnMMu88BhYmgNGi518Y/exec"
+    WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwWsHVETAgUop6CeW5RmM1rSlCvCU0mNjqOqxRz2zDlYcPnkCxwjEJk8Y-K70U1Z1ms/exec"
 
     resp = requests.post(WEBAPP_URL, json=payload)
     print(resp.status_code)
